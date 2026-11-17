@@ -2,12 +2,17 @@
 
 The supported development host is Ubuntu 24.04 LTS x86_64. The bootstrap
 script checks the OS and architecture, installs LLVM/Clang 23 from the official
-stable release artifact, builds GCC 16.2.0 from its checksum-verified official
-source release, installs CMake 4.5.0 and Ninja 1.13.2 from verified upstream
-release artifacts, installs Syft and Grype using Anchore's official installers,
-and creates a vcpkg checkout at the pinned baseline. It does not install
+stable release artifact (including LLD and LLVM utilities), installs CMake
+4.5.0 and Ninja 1.13.2 from verified upstream release artifacts, installs Syft
+and Grype using Anchore's official installers, and creates a vcpkg checkout at
+the pinned baseline. Linux builds use Clang/Clang++ only. It does not install
 redundant apt copies of project libraries: ICU, SQLite, GoogleTest, and Google
 Benchmark are resolved with vcpkg.
+
+GitHub Actions caches the versioned LLVM/LLD, CMake, and Ninja installations,
+plus checksum-verified vcpkg source downloads. Cache keys include Ubuntu
+version, architecture, tool versions, and the relevant installer or manifest
+hash. Build directories and generated binaries are not cached.
 
 ## One-time setup
 
@@ -72,12 +77,9 @@ KALAIME_JOBS=2 scripts/build-ubuntu.sh ubuntu-dev
 ```
 
 Ninja creates `build/ubuntu-dev/compile_commands.json`, consumed by clangd and
-clang-tidy. The development preset explicitly uses `clang++-23`; the GCC CI
-preset explicitly uses `g++-16` (GCC 16.2.0). GCC CI checks the configured
-compiler and every entry in `build/ubuntu-gcc-ci/compile_commands.json` after
-configuration, without compiling sources. These checks verify compiler
-selection, not successful compilation or runtime behavior; those require the
-subsequent build and test steps. Normal development disables benchmark
+clang-tidy. Both Ubuntu presets explicitly select `clang-23` and `clang++-23`,
+and use LLD for linking. The Ubuntu CI verifies the configured compiler paths
+and version before building and testing. Normal development disables benchmark
 compilation.
 
 ## Optional benchmark target
@@ -88,7 +90,11 @@ Ubuntu development preset. Enable it in an isolated build directory:
 ```bash
 cmake -S . -B build/ubuntu-benchmarks -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+  -DCMAKE_C_COMPILER=clang-23 \
   -DCMAKE_CXX_COMPILER=clang++-23 \
+  -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld \
+  -DCMAKE_SHARED_LINKER_FLAGS=-fuse-ld=lld \
+  -DCMAKE_MODULE_LINKER_FLAGS=-fuse-ld=lld \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DVCPKG_MANIFEST_FEATURES='testing;benchmarks' \
@@ -110,8 +116,7 @@ individual file locally, run:
 clang-format-23 -i path/to/file.cpp
 ```
 
-`clang-tidy-23` reads the configured compile database. `g++-16` is built from
-the official GCC 16.2.0 source release during bootstrap. CMake/clangd/clang-tidy
+`clang-tidy-23` reads the configured compile database. CMake/clangd/clang-tidy
 diagnostics in this environment apply to portable sources only; Ubuntu does
 not supply Windows SDK, MSVC COM declarations, or TSF headers. Windows-only
 sources are checked by Windows CI with MSVC and `/analyze`.

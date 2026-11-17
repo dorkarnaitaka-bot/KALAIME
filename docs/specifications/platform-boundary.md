@@ -15,7 +15,7 @@ registration or TSF service implementation is currently in scope.
 
 ## Verification
 
-Ubuntu CI compiles portable targets with Clang and GCC. Windows CI compiles the
+Ubuntu CI compiles portable targets with Clang/LLVM only. Windows CI compiles the
 Windows shared-library boundary and runs non-interactive tests on the hosted
 Windows 2022 image. Real keyboard input and desktop integration require
 interactive Windows verification outside ordinary hosted CI.

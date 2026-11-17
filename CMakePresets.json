@@ -14,7 +14,11 @@
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang-23",
         "CMAKE_CXX_COMPILER": "clang++-23",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=lld",
+        "CMAKE_MODULE_LINKER_FLAGS": "-fuse-ld=lld",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "BUILD_TESTING": "ON",
         "KALAIME_BUILD_BENCHMARKS": "OFF",
@@ -29,26 +33,15 @@
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang-23",
         "CMAKE_CXX_COMPILER": "clang++-23",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=lld",
+        "CMAKE_MODULE_LINKER_FLAGS": "-fuse-ld=lld",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "BUILD_TESTING": "ON",
         "KALAIME_BUILD_BENCHMARKS": "OFF",
         "KALAIME_ENABLE_MSVC_ANALYSIS": "OFF",
-        "VCPKG_MANIFEST_FEATURES": "testing"
-      }
-    },
-    {
-      "name": "ubuntu-gcc-ci",
-      "displayName": "Ubuntu GCC compatibility CI (Ninja)",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/ubuntu-gcc-ci",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_CXX_COMPILER": "g++-16",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "BUILD_TESTING": "ON",
-        "KALAIME_BUILD_BENCHMARKS": "OFF",
         "VCPKG_MANIFEST_FEATURES": "testing"
       }
     },
@@ -88,11 +81,6 @@
       "jobs": 1
     },
     {
-      "name": "ubuntu-gcc-ci",
-      "configurePreset": "ubuntu-gcc-ci",
-      "jobs": 1
-    },
-    {
       "name": "windows-msvc-release",
       "configurePreset": "windows-msvc",
       "configuration": "Release",
@@ -116,13 +104,6 @@
     {
       "name": "ubuntu-ci",
       "configurePreset": "ubuntu-ci",
-      "output": {
-        "outputOnFailure": true
-      }
-    },
-    {
-      "name": "ubuntu-gcc-ci",
-      "configurePreset": "ubuntu-gcc-ci",
       "output": {
         "outputOnFailure": true
       }

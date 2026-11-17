@@ -8,10 +8,10 @@ KALAIME targets a native Windows x64 IME. The product requires strong interopera
 
 ## Decision
 
-The project uses C++20 for all production and portable shared engine code. The Windows production compiler remains MSVC v143 and is required for the native x64 build. Clang and GCC are permitted only for Ubuntu portability validation and code quality checks.
+The project uses C++20 for all production and portable shared engine code. The Windows production compiler remains MSVC v143 and is required for the native x64 build. Ubuntu development and CI use Clang/LLVM exclusively for portability validation and code quality checks.
 
 ## Consequences
 
 - Windows production verification must run on a hosted MSVC runner or a matching developer machine.
-- Ubuntu development remains lightweight and uses Clang with Ninja.
+- Ubuntu development and CI use Clang/Clang++, LLD, and Ninja.
 - The portable shared engine remains free of Windows-specific headers.

@@ -10,6 +10,8 @@
 # vcpkg manifest installation and downloaded sources
 /vcpkg_installed/
 /vcpkg/
+/.vcpkg/
+/.vcpkg-downloads/
 
 # IDE and editor state
 .vscode/*.log

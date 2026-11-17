@@ -22,7 +22,7 @@ dictionary algorithm, registration, or user-facing behavior.
 - WIL is only found and linked for the Windows target. Ubuntu portable targets
   cannot include Windows SDK, COM, TSF, or WIL headers.
 - Windows production configurations fail unless CMake selects MSVC toolset
-  v143. No MinGW, GCC, clang-cl, or Zig fallback is permitted.
+  v143. No alternate compiler toolset is permitted.
 
 Future platform adapters should be separate targets that depend on the
 platform-neutral API, not on Windows implementation details. Linux, macOS, and
@@ -55,7 +55,7 @@ database.
 
 ## Verification boundaries
 
-Ubuntu CI exercises the portable core and tests with Clang and GCC. Windows CI
+Ubuntu CI exercises the portable core and tests with Clang/LLVM only. Windows CI
 builds the x64 DLL and tests using MSVC v143 and the Windows SDK. Hosted
 Windows checks are compile and non-interactive tests; COM/TSF registration and
 actual desktop typing need a separate interactive Windows test environment.

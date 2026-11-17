@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(KALAIME VERSION 0.1.0 LANGUAGES CXX)
+project(KALAIME VERSION 0.1.0 LANGUAGES C CXX)
 
 option(BUILD_TESTING "Build KALAIME test executables" OFF)
 option(KALAIME_BUILD_BENCHMARKS "Build optional Google Benchmark executables" OFF)
@@ -9,6 +9,11 @@ option(KALAIME_ENABLE_MSVC_ANALYSIS "Enable strict MSVC warnings and /analyze" O
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+   (NOT CMAKE_C_COMPILER_ID MATCHES "Clang" OR NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    message(FATAL_ERROR "Linux builds require the Clang/LLVM C and C++ compilers.")
+endif()
 
 find_package(ICU REQUIRED COMPONENTS uc i18n)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
@@ -65,7 +70,7 @@ function(kalaime_configure_target target_name)
         if(KALAIME_ENABLE_MSVC_ANALYSIS)
             target_compile_options(${target_name} PRIVATE /analyze)
         endif()
-    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
     endif()
 endfunction()
@@ -80,7 +85,7 @@ if(WIN32)
     if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR NOT MSVC_TOOLSET_VERSION STREQUAL "143")
         message(FATAL_ERROR
             "The Windows production target requires the MSVC v143 toolset; "
-            "MinGW, GCC, clang-cl, and other toolsets are unsupported.")
+            "alternate compiler toolsets are unsupported.")
     endif()
 
     find_package(wil CONFIG REQUIRED)
