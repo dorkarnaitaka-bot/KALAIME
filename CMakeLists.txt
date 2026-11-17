@@ -20,8 +20,14 @@ target_link_libraries(kalaime_unicode PUBLIC ICU::uc ICU::i18n)
 add_library(kalaime_layout_api INTERFACE)
 target_include_directories(kalaime_layout_api INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
-add_library(kalaime_phonetic STATIC src/layouts/phonetic/kala_phonetic_layout.cpp)
+add_library(kalaime_phonetic STATIC
+    src/layouts/phonetic/kala_phonetic_layout.cpp
+    src/layouts/phonetic/phonetic_input_session.cpp
+    src/layouts/phonetic/phonetic_parser.cpp
+    src/layouts/phonetic/phonetic_tokenizer.cpp
+)
 target_include_directories(kalaime_phonetic PUBLIC "${PROJECT_SOURCE_DIR}/include")
+target_include_directories(kalaime_phonetic PRIVATE "${PROJECT_SOURCE_DIR}/src")
 target_link_libraries(kalaime_phonetic PUBLIC kalaime_layout_api kalaime_unicode)
 
 add_library(kalaime_candidates STATIC src/candidates/candidate_engine.cpp)
@@ -55,15 +61,19 @@ function(kalaime_configure_target target_name)
     )
 
     if(MSVC)
-        target_compile_options(${target_name} PRIVATE /W4)
+        target_compile_options(${target_name} PRIVATE /W4 /utf-8)
         if(KALAIME_ENABLE_MSVC_ANALYSIS)
             target_compile_options(${target_name} PRIVATE /analyze)
         endif()
-    else()
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
         target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
     endif()
 endfunction()
 
+kalaime_configure_target(kalaime_unicode)
+kalaime_configure_target(kalaime_phonetic)
+kalaime_configure_target(kalaime_candidates)
+kalaime_configure_target(kalaime_dictionary)
 kalaime_configure_target(kalaime_core)
 
 if(WIN32)
@@ -87,7 +97,15 @@ include(CTest)
 if(BUILD_TESTING)
     find_package(GTest CONFIG REQUIRED)
 
-    add_executable(kalaime_unit_tests tests/unit/project_smoke_test.cpp)
+    add_executable(kalaime_unit_tests
+        tests/unit/project_smoke_test.cpp
+        tests/unit/phonetic_parser_test.cpp
+        tests/unit/phonetic_input_session_test.cpp
+        tests/unit/phonetic_candidate_test.cpp
+        tests/unit/phonetic_tokenizer_test.cpp
+        tests/unit/unicode_test.cpp
+    )
+    target_include_directories(kalaime_unit_tests PRIVATE "${PROJECT_SOURCE_DIR}/src")
     target_link_libraries(kalaime_unit_tests PRIVATE kalaime_core GTest::gtest_main)
     kalaime_configure_target(kalaime_unit_tests)
     add_test(NAME kalaime.unit COMMAND kalaime_unit_tests)

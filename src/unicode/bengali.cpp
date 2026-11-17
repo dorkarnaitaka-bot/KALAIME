@@ -1,29 +1,90 @@
 #include "kalaime/unicode/bengali.hpp"
 
+#include <unicode/brkiter.h>
+#include <unicode/locid.h>
 #include <unicode/normalizer2.h>
+#include <unicode/stringpiece.h>
 #include <unicode/unistr.h>
+#include <unicode/ustring.h>
+
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
+#include <utility>
 
 namespace kalaime::unicode {
+namespace {
 
-std::string normalize_nfkc(const std::string& text) {
+icu::UnicodeString to_unicode_string(std::string_view text) {
+    if (!is_valid_utf8(text)) {
+        throw std::invalid_argument("Input is not valid UTF-8");
+    }
+    if (text.size() > static_cast<std::size_t>(INT32_MAX)) {
+        throw std::length_error("Input exceeds ICU's maximum string length");
+    }
+
+    return icu::UnicodeString::fromUTF8(
+        icu::StringPiece(text.data(), static_cast<int32_t>(text.size())));
+}
+
+std::string normalize(std::string_view text, bool compatibility) {
     if (text.empty()) {
         return {};
     }
 
     UErrorCode status = U_ZERO_ERROR;
-    const icu::Normalizer2* normalizer = icu::Normalizer2::getNFKCInstance(status);
-    if (U_FAILURE(status) || normalizer == nullptr) {
-        return text;
+    const icu::Normalizer2* normalizer = compatibility ? icu::Normalizer2::getNFKCInstance(status)
+                                                       : icu::Normalizer2::getNFCInstance(status);
+    if (U_FAILURE(status) != 0 || normalizer == nullptr) {
+        throw std::runtime_error("Unable to initialize ICU normalizer");
     }
 
-    icu::UnicodeString source = icu::UnicodeString::fromUTF8(std::string(text));
+    const icu::UnicodeString source = to_unicode_string(text);
     icu::UnicodeString normalized;
     normalizer->normalize(source, normalized, status);
+    if (U_FAILURE(status) != 0) {
+        throw std::runtime_error("ICU normalization failed");
+    }
 
     std::string converted;
     normalized.toUTF8String(converted);
     return converted;
 }
+
+}  // namespace
+
+bool is_valid_utf8(std::string_view text) noexcept {
+    if (text.size() > static_cast<std::size_t>(INT32_MAX)) {
+        return false;
+    }
+    if (text.empty()) {
+        return true;
+    }
+
+    UErrorCode status = U_ZERO_ERROR;
+    int32_t utf16_length = 0;
+    u_strFromUTF8(nullptr, 0, &utf16_length, text.data(), static_cast<int32_t>(text.size()),
+                  &status);
+    return status == U_BUFFER_OVERFLOW_ERROR || U_SUCCESS(status) != 0;
+}
+
+std::size_t count_utf8_code_points(std::string_view text) {
+    if (!is_valid_utf8(text)) {
+        throw std::invalid_argument("Input is not valid UTF-8");
+    }
+
+    std::size_t count = 0;
+    for (const unsigned char byte : text) {
+        if (U8_IS_TRAIL(byte) == 0) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+std::string normalize_nfc(std::string_view text) { return normalize(text, false); }
+
+std::string normalize_nfkc(const std::string& text) { return normalize(text, true); }
 
 std::vector<BengaliCharacterInfo> supported_bengali_inventory() {
     return {{"অ", "Bengali Letter A", "Lo", "a", "অ"},
@@ -106,16 +167,21 @@ std::vector<std::string> split_graphemes(const std::string& text) {
         return result;
     }
 
-    std::string current;
-    for (unsigned char ch : text) {
-        current.push_back(static_cast<char>(ch));
-        if ((ch & 0x80u) == 0) {
-            result.push_back(current);
-            current.clear();
-        }
+    const icu::UnicodeString source = to_unicode_string(text);
+    UErrorCode status = U_ZERO_ERROR;
+    std::unique_ptr<icu::BreakIterator> iterator(
+        icu::BreakIterator::createCharacterInstance(icu::Locale::getRoot(), status));
+    if (U_FAILURE(status) != 0 || iterator == nullptr) {
+        throw std::runtime_error("Unable to initialize ICU grapheme iterator");
     }
-    if (!current.empty()) {
-        result.push_back(current);
+
+    iterator->setText(source);
+    int32_t start = iterator->first();
+    for (int32_t end = iterator->next(); end != icu::BreakIterator::DONE;
+         start = end, end = iterator->next()) {
+        std::string grapheme;
+        source.tempSubStringBetween(start, end).toUTF8String(grapheme);
+        result.push_back(std::move(grapheme));
     }
     return result;
 }

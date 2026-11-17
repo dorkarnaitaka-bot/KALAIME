@@ -10,8 +10,8 @@ permissions:
 
 jobs:
   clang:
-    name: Clang 18 / Ubuntu 24.04
-    runs-on: ubuntu-24.04
+    name: Clang 23 / Ubuntu 26.04
+    runs-on: ubuntu-26.04
     env:
       VCPKG_ROOT: ${{ github.workspace }}/.vcpkg
       VCPKG_MAX_CONCURRENCY: 2
@@ -23,8 +23,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential clang-18 clang-tidy-18 clangd-18 clang-format-18 \
-            cmake ninja-build git curl zip unzip tar pkg-config python3
+            build-essential git curl zip unzip tar zstd pkg-config python3
+          scripts/install-llvm-23-ubuntu.sh
+          scripts/install-linux-build-tools.sh
+          clang++-23 --version
+          cmake --version
+          ninja --version
 
       - name: Install pinned vcpkg
         shell: bash
@@ -59,8 +63,8 @@ jobs:
           retention-days: 7
 
   gcc:
-    name: GCC / Ubuntu 24.04
-    runs-on: ubuntu-24.04
+    name: GCC 16.2 / Ubuntu 26.04
+    runs-on: ubuntu-26.04
     env:
       VCPKG_ROOT: ${{ github.workspace }}/.vcpkg
       VCPKG_MAX_CONCURRENCY: 2
@@ -71,7 +75,16 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build git curl zip unzip tar pkg-config python3
+          sudo apt-get install -y --no-install-recommends \
+            build-essential git curl zip unzip tar zstd pkg-config python3 \
+            libgmp-dev libmpfr-dev libmpc-dev
+          scripts/install-linux-build-tools.sh
+          scripts/install-gcc-16-ubuntu.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          g++-16 -dumpfullversion | grep -Fx '16.2.0'
+          cmake --version | grep -F '4.5.0'
+          ninja --version | grep -Fx '1.13.2'
 
       - name: Install pinned vcpkg
         shell: bash
@@ -83,6 +96,50 @@ jobs:
 
       - name: Configure
         run: cmake --preset ubuntu-gcc-ci
+
+      - name: Verify GCC compile database
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import shlex
+          import shutil
+          import subprocess
+
+          expected = pathlib.Path(shutil.which("g++-16")).resolve(strict=True)
+          cache = pathlib.Path("build/ubuntu-gcc-ci/CMakeCache.txt").read_text()
+          compiler_entry = next(
+              line for line in cache.splitlines()
+              if line.startswith("CMAKE_CXX_COMPILER:") and "=" in line
+          )
+          configured_name = compiler_entry.split("=", 1)[1]
+          configured_path = pathlib.Path(configured_name)
+          if not configured_path.is_absolute():
+              configured_name = shutil.which(configured_name)
+              assert configured_name, "CMake's selected compiler is not on PATH"
+              configured_path = pathlib.Path(configured_name)
+          configured = configured_path.resolve(strict=True)
+          assert configured == expected, f"CMake selected {configured}, expected {expected}"
+          version = subprocess.check_output(
+              [str(expected), "-dumpfullversion"], text=True
+          ).strip()
+          assert version == "16.2.0", f"Unexpected compiler version: {version}"
+
+          commands = json.loads(
+              pathlib.Path("build/ubuntu-gcc-ci/compile_commands.json").read_text()
+          )
+          assert commands, "compile_commands.json contains no commands"
+          for entry in commands:
+              argv = entry.get("arguments") or shlex.split(entry["command"])
+              actual_name = argv[0]
+              actual_path = pathlib.Path(actual_name)
+              if not actual_path.is_absolute():
+                  actual_name = shutil.which(actual_name)
+                  assert actual_name, f"Compile command compiler is not on PATH: {argv[0]}"
+                  actual_path = pathlib.Path(actual_name)
+              actual = actual_path.resolve(strict=True)
+              assert actual == expected, f"Compile command uses {actual}, expected {expected}"
+          PY
 
       - name: Build
         run: cmake --build --preset ubuntu-gcc-ci --parallel 1

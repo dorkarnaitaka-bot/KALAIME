@@ -66,9 +66,12 @@ jobs:
       - name: Build Release
         shell: pwsh
         run: |
-          cmake --build --preset windows-msvc-release --parallel 1 2>&1 |
+          cmake --build --preset windows-msvc-release --parallel 1 --verbose -- /verbosity:diagnostic 2>&1 |
             Tee-Object -FilePath build/windows-msvc/build-release.log
           if ($LASTEXITCODE -ne 0) { throw "Release build failed." }
+          if (-not (Select-String -Path build/windows-msvc/build-release.log -Pattern '/utf-8' -Quiet)) {
+            throw "MSVC compile commands did not contain the required /utf-8 option."
+          }
 
       - name: Test Release
         run: ctest --preset windows-msvc-release --output-junit build/windows-msvc/ctest-release.xml
@@ -76,9 +79,12 @@ jobs:
       - name: Build Debug
         shell: pwsh
         run: |
-          cmake --build --preset windows-msvc-debug --parallel 1 2>&1 |
+          cmake --build --preset windows-msvc-debug --parallel 1 --verbose -- /verbosity:diagnostic 2>&1 |
             Tee-Object -FilePath build/windows-msvc/build-debug.log
           if ($LASTEXITCODE -ne 0) { throw "Debug build failed." }
+          if (-not (Select-String -Path build/windows-msvc/build-debug.log -Pattern '/utf-8' -Quiet)) {
+            throw "MSVC compile commands did not contain the required /utf-8 option."
+          }
 
       - name: Test Debug
         run: ctest --preset windows-msvc-debug --output-junit build/windows-msvc/ctest-debug.xml

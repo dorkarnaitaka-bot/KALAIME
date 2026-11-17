@@ -8,13 +8,13 @@
   "configurePresets": [
     {
       "name": "ubuntu-dev",
-      "displayName": "Ubuntu development (Clang 18, Ninja)",
+      "displayName": "Ubuntu development (Clang 23, Ninja)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/ubuntu-dev",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_CXX_COMPILER": "clang++-18",
+        "CMAKE_CXX_COMPILER": "clang++-23",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "BUILD_TESTING": "ON",
         "KALAIME_BUILD_BENCHMARKS": "OFF",
@@ -23,13 +23,13 @@
     },
     {
       "name": "ubuntu-ci",
-      "displayName": "Ubuntu CI (Clang 18, Ninja)",
+      "displayName": "Ubuntu CI (Clang 23, Ninja)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/ubuntu-ci",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_CXX_COMPILER": "clang++-18",
+        "CMAKE_CXX_COMPILER": "clang++-23",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "BUILD_TESTING": "ON",
         "KALAIME_BUILD_BENCHMARKS": "OFF",
@@ -45,7 +45,7 @@
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_CXX_COMPILER": "g++-16",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "BUILD_TESTING": "ON",
         "KALAIME_BUILD_BENCHMARKS": "OFF",

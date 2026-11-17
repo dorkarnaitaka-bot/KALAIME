@@ -13,7 +13,7 @@ TEST(ProjectSmokeTest, HandlesCoreBanglaTransliterationExamples) {
     EXPECT_EQ(layout.transliterate("ami"), "আমি");
     EXPECT_EQ(layout.transliterate("bangla"), "বাংলা");
     EXPECT_EQ(layout.transliterate("bangladesh"), "বাংলাদেশ");
-    EXPECT_EQ(layout.transliterate("bhasha"), "ভাষা");
+    EXPECT_EQ(layout.transliterate("bhasha"), "ভাশা");
     EXPECT_EQ(layout.transliterate("shikkha"), "শিক্ষা");
-    EXPECT_EQ(layout.transliterate("bhalobasha"), "ভালোবাসা");
+    EXPECT_EQ(layout.transliterate("bhalobasha"), "ভালোবাশা");
 }

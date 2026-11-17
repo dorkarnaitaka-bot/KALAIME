@@ -7,7 +7,7 @@
 - C++20 is the shared source language.
 - Windows production builds use MSVC v143, Windows SDK, Win32, COM, and TSF.
   Windows artifacts are built on `windows-2022` GitHub-hosted runners.
-- Ubuntu 24.04 is the primary developer environment, using Clang 18, clangd,
+- Ubuntu 24.04 is the primary developer environment, using Clang 23, clangd,
   CMake, Ninja, clang-format, and clang-tidy.
 - CMake presets and vcpkg manifest mode govern configuration and dependency
   resolution. The registry baseline is pinned in `vcpkg.json`.
