@@ -13,7 +13,7 @@ jobs:
     name: MSVC v143 / Windows 2022 / x64
     runs-on: windows-2022
     env:
-      VCPKG_ROOT: ${{ runner.temp }}\vcpkg
+      VCPKG_ROOT: ${{ github.workspace }}\.vcpkg
       VCPKG_MAX_CONCURRENCY: 2
     steps:
       - name: Checkout
