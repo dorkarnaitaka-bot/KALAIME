@@ -8,7 +8,7 @@ readonly LLVM_ROOT="${INSTALL_ROOT}/LLVM-${LLVM_VERSION}-Linux-X64"
 readonly LLVM_BIN="${LLVM_ROOT}/bin"
 readonly LOCAL_BIN="${HOME}/.local/bin"
 readonly -a LLVM_TOOLS=(
-    clang clang++ clangd clang-format clang-tidy lld ld.lld
+    clang clang++ clangd clang-format clang-tidy ld.lld
     llvm-ar llvm-ranlib llvm-nm llvm-objcopy llvm-objdump llvm-strip llvm-readelf llvm-readobj llvm-symbolizer
 )
 
@@ -19,8 +19,21 @@ command -v zstd >/dev/null 2>&1 || {
 
 llvm_installation_is_valid() {
     for tool in "${LLVM_TOOLS[@]}"; do
-        [[ -x "${LLVM_BIN}/${tool}" ]] || return 1
-        "${LLVM_BIN}/${tool}" --version 2>&1 | grep -Fq "${LLVM_VERSION}" || return 1
+        if [[ ! -x "${LLVM_BIN}/${tool}" ]]; then
+            printf 'ERROR: LLVM tool %s is missing or not executable.\n' "${tool}" >&2
+            return 1
+        fi
+        local version_output
+        if ! version_output="$("${LLVM_BIN}/${tool}" --version 2>&1)"; then
+            printf 'ERROR: LLVM tool %s failed version check: %s\n' \
+                "${tool}" "${version_output}" >&2
+            return 1
+        fi
+        if [[ "${version_output}" != *"${LLVM_VERSION}"* ]]; then
+            printf 'ERROR: LLVM tool %s reported an unexpected version: %s\n' \
+                "${tool}" "${version_output}" >&2
+            return 1
+        fi
     done
 }
 
@@ -59,7 +72,6 @@ if llvm_installation_is_valid; then
     clang-format-23 --version | grep -F "${LLVM_VERSION}"
     clang-tidy-23 --version | grep -F "${LLVM_VERSION}"
     clangd-23 --version | grep -F "${LLVM_VERSION}"
-    lld-23 --version | grep -F "${LLVM_VERSION}"
     ld.lld-23 --version | grep -F "${LLVM_VERSION}"
     llvm-ar-23 --version | grep -F "${LLVM_VERSION}"
     llvm-ranlib-23 --version | grep -F "${LLVM_VERSION}"
@@ -98,7 +110,7 @@ archive_root="$(zstd --long=30 -dc "${archive}" | tar -tf - | sed -n '1{s#/.*##;
     exit 1
 }
 zstd --long=30 -dc "${archive}" | tar -tf - |
-    grep -E "^${archive_root}/(bin/(clang|clang\\+\\+|clangd|clang-tidy|clang-format|lld|ld\\.lld|llvm-(ar|ranlib|nm|objcopy|objdump|strip|readelf|readobj|symbolizer))(-[0-9]+)?|lib/lib(clang|LLVM)[^/]*\\.so[^/]*|lib/clang/23/)" \
+    grep -E "^${archive_root}/(bin/(clang|clang\\+\\+|clangd|clang-tidy|clang-format|ld\\.lld|llvm-(ar|ranlib|nm|objcopy|objdump|strip|readelf|readobj|symbolizer))(-[0-9]+(\\.[0-9]+)*)?|lib/lib(clang|LLVM)[^/]*\\.so[^/]*|lib/clang/23/)" \
     | grep -v '/$' \
         > "${file_list}"
 mkdir -p "${INSTALL_ROOT}"
@@ -119,7 +131,6 @@ clang++-23 --version | grep -F "${LLVM_VERSION}"
 clang-format-23 --version | grep -F "${LLVM_VERSION}"
 clang-tidy-23 --version | grep -F "${LLVM_VERSION}"
 clangd-23 --version | grep -F "${LLVM_VERSION}"
-lld-23 --version | grep -F "${LLVM_VERSION}"
 ld.lld-23 --version | grep -F "${LLVM_VERSION}"
 llvm-ar-23 --version | grep -F "${LLVM_VERSION}"
 llvm-ranlib-23 --version | grep -F "${LLVM_VERSION}"

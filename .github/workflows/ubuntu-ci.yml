@@ -81,7 +81,6 @@ jobs:
           clang-format-23 --version | grep -F '23.1.5'
           clang-tidy-23 --version | grep -F '23.1.5'
           clangd-23 --version | grep -F '23.1.5'
-          lld-23 --version | grep -F '23.1.5'
           ld.lld-23 --version | grep -F '23.1.5'
           llvm-ar-23 --version | grep -F '23.1.5'
           llvm-ranlib-23 --version | grep -F '23.1.5'
