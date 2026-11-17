@@ -1,0 +1,21 @@
+CompileFlags:
+  CompilationDatabase: build/ubuntu-dev
+
+Diagnostics:
+  ClangTidy:
+    Add:
+      - clang-analyzer-*
+      - bugprone-*
+      - performance-*
+      - portability-*
+      - readability-*
+      - modernize-*
+    Remove:
+      - modernize-use-trailing-return-type
+      - readability-identifier-length
+
+Completion:
+  AllScopes: true
+
+Index:
+  Background: Build

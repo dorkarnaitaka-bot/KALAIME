@@ -1,0 +1,83 @@
+# KALA Input (KALAIME)
+
+**KALA** is the brand; **KALA Input** is the product; **KALAIME** is the
+technical project.
+
+KALAIME is being prepared as a native Bangla input method. This repository
+currently contains development infrastructure and compilation smoke targets,
+not a working input method.
+
+## Scope and platform
+
+- Production target: Windows 10/11 x64.
+- Windows integration direction: native MSVC v143, Win32, COM, and Text Services
+  Framework (TSF).
+- Ubuntu 24.04 is the primary development environment for the platform-neutral
+  C++20 code.
+- The source and target boundaries keep the portable core separate from the
+  Windows adapter. Linux, macOS, and Android input method adapters are not
+  implemented or claimed as supported.
+- There is no Bangla phonetic engine, keyboard layout, candidate selection,
+  dictionary behavior, TSF registration, or usable IME in this scaffold.
+
+See [the architecture overview](docs/architecture/overview.md) and
+[development setup](docs/development/ubuntu.md) for details.
+
+## Technology
+
+- C++20 and CMake with CMake Presets
+- Ubuntu: Clang 18, Ninja, clangd, clang-format, and clang-tidy
+- Windows production build: MSVC v143, Windows SDK, MSBuild, and the Visual
+  Studio 17 2022 CMake generator
+- vcpkg manifest mode with a pinned registry baseline
+- ICU4C and SQLite as production dependencies; WIL on Windows only
+- GoogleTest and Google Benchmark as optional development dependencies
+
+## Prerequisites
+
+Ubuntu 24.04 x86_64, Git, and `sudo` for installing missing system packages.
+Run `scripts/bootstrap-ubuntu.sh` to detect and install missing tools and set
+up the pinned vcpkg checkout. Windows compilation is performed by the
+`windows-2022` GitHub Actions runner; Ubuntu is not expected to provide a
+Windows SDK or MSVC.
+
+## Build and test on Ubuntu
+
+```bash
+scripts/bootstrap-ubuntu.sh
+export PATH="$HOME/.local/bin:$PATH"
+export VCPKG_ROOT="$HOME/.cache/kalaime/vcpkg"
+scripts/configure-ubuntu.sh
+scripts/build-ubuntu.sh
+scripts/test-ubuntu.sh
+scripts/check-format-ubuntu.sh
+scripts/check-tidy-ubuntu.sh
+```
+
+By default, builds use one job. Set `KALAIME_JOBS` to a positive integer to
+override this for `scripts/build-ubuntu.sh`. Benchmarks are disabled in normal
+development builds; see [Ubuntu development instructions](docs/development/ubuntu.md)
+to enable the optional target.
+
+## Windows build
+
+The Windows CI workflow verifies MSVC v143 and the Windows SDK, configures the
+`windows-msvc` preset, builds x64 Release and Debug, and runs non-interactive
+tests. It produces a native Windows DLL build boundary only; it is not a
+registered or functioning TSF service. See
+[Windows build instructions](docs/development/windows.md).
+
+## Tests
+
+GoogleTest infrastructure tests verify that the portable core library builds,
+links, and exposes its initial infrastructure ABI marker. They do not test
+input method or Bangla-language behavior. CTest is used on Ubuntu and Windows.
+The optional benchmark is only a build/configuration smoke target and does not
+represent IME performance.
+
+## Security and dependencies
+
+Dependency versions, licenses, and source URLs are listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Security reporting is
+described in [SECURITY.md](SECURITY.md). No signing certificates or credentials
+belong in this repository.

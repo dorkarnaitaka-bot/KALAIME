@@ -1,0 +1,147 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "ubuntu-dev",
+      "displayName": "Ubuntu development (Clang 18, Ninja)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/ubuntu-dev",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "clang++-18",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_TESTING": "ON",
+        "KALAIME_BUILD_BENCHMARKS": "OFF",
+        "VCPKG_MANIFEST_FEATURES": "testing"
+      }
+    },
+    {
+      "name": "ubuntu-ci",
+      "displayName": "Ubuntu CI (Clang 18, Ninja)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/ubuntu-ci",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_COMPILER": "clang++-18",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_TESTING": "ON",
+        "KALAIME_BUILD_BENCHMARKS": "OFF",
+        "KALAIME_ENABLE_MSVC_ANALYSIS": "OFF",
+        "VCPKG_MANIFEST_FEATURES": "testing"
+      }
+    },
+    {
+      "name": "ubuntu-gcc-ci",
+      "displayName": "Ubuntu GCC compatibility CI (Ninja)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/ubuntu-gcc-ci",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_TESTING": "ON",
+        "KALAIME_BUILD_BENCHMARKS": "OFF",
+        "VCPKG_MANIFEST_FEATURES": "testing"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "displayName": "Windows production (MSVC v143, x64)",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "toolset": {
+        "value": "v143",
+        "strategy": "set"
+      },
+      "binaryDir": "${sourceDir}/build/windows-msvc",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "OFF",
+        "BUILD_TESTING": "ON",
+        "KALAIME_BUILD_BENCHMARKS": "OFF",
+        "KALAIME_ENABLE_MSVC_ANALYSIS": "ON",
+        "VCPKG_MANIFEST_FEATURES": "testing"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ubuntu-dev",
+      "configurePreset": "ubuntu-dev",
+      "jobs": 1
+    },
+    {
+      "name": "ubuntu-ci",
+      "configurePreset": "ubuntu-ci",
+      "jobs": 1
+    },
+    {
+      "name": "ubuntu-gcc-ci",
+      "configurePreset": "ubuntu-gcc-ci",
+      "jobs": 1
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc",
+      "configuration": "Release",
+      "jobs": 1
+    },
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug",
+      "jobs": 1
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ubuntu-dev",
+      "configurePreset": "ubuntu-dev",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ubuntu-ci",
+      "configurePreset": "ubuntu-ci",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ubuntu-gcc-ci",
+      "configurePreset": "ubuntu-gcc-ci",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}
