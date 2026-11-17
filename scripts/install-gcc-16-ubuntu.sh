@@ -42,20 +42,18 @@ for tool in gcc-16 g++-16; do
     fi
 done
 
-for tool in gcc g++ make curl pkg-config sha512sum; do
+for tool in gcc g++ make curl sha512sum; do
     command -v "${tool}" >/dev/null 2>&1 || {
         printf 'ERROR: %s is required to build GCC %s.\n' "${tool}" "${GCC_VERSION}" >&2
         exit 1
     }
 done
 
-for library in gmp mpfr mpc; do
-    pkg-config --exists "${library}" || {
-        printf 'ERROR: development files for %s are required (install lib%s-dev).\n' \
-            "${library}" "${library}" >&2
-        exit 1
-    }
-done
+if ! printf '#include <gmp.h>\n#include <mpfr.h>\n#include <mpc.h>\nint main(void) { return 0; }\n' |
+    gcc -x c - -o /dev/null -lgmp -lmpfr -lmpc; then
+    printf 'ERROR: GMP, MPFR, and MPC development files are required (install libgmp-dev, libmpfr-dev, and libmpc-dev).\n' >&2
+    exit 1
+fi
 
 work_root="$(mktemp -d)"
 archive="${work_root}/gcc-${GCC_VERSION}.tar.xz"
