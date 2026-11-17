@@ -85,6 +85,7 @@ jobs:
           ld.lld-23 --version | grep -F '23.1.5'
           llvm-ar-23 --version | grep -F '23.1.5'
           llvm-ranlib-23 --version | grep -F '23.1.5'
+          llvm-readobj-23 --version | grep -F '23.1.5'
           cmake --version | grep -Fx 'cmake version 4.5.0'
           ninja --version | grep -Fx '1.13.2'
 

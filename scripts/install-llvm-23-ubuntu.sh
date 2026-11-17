@@ -9,7 +9,7 @@ readonly LLVM_BIN="${LLVM_ROOT}/bin"
 readonly LOCAL_BIN="${HOME}/.local/bin"
 readonly -a LLVM_TOOLS=(
     clang clang++ clangd clang-format clang-tidy lld ld.lld
-    llvm-ar llvm-ranlib llvm-nm llvm-objcopy llvm-objdump llvm-strip llvm-readelf llvm-symbolizer
+    llvm-ar llvm-ranlib llvm-nm llvm-objcopy llvm-objdump llvm-strip llvm-readelf llvm-readobj llvm-symbolizer
 )
 
 command -v zstd >/dev/null 2>&1 || {
@@ -98,7 +98,7 @@ archive_root="$(zstd --long=30 -dc "${archive}" | tar -tf - | sed -n '1{s#/.*##;
     exit 1
 }
 zstd --long=30 -dc "${archive}" | tar -tf - |
-    grep -E "^${archive_root}/(bin/(clang|clang\\+\\+|clangd|clang-tidy|clang-format|lld|ld\\.lld|llvm-(ar|ranlib|nm|objcopy|objdump|strip|readelf|symbolizer))(-[0-9]+)?|lib/lib(clang|LLVM)[^/]*\\.so[^/]*|lib/clang/23/)" \
+    grep -E "^${archive_root}/(bin/(clang|clang\\+\\+|clangd|clang-tidy|clang-format|lld|ld\\.lld|llvm-(ar|ranlib|nm|objcopy|objdump|strip|readelf|readobj|symbolizer))(-[0-9]+)?|lib/lib(clang|LLVM)[^/]*\\.so[^/]*|lib/clang/23/)" \
     | grep -v '/$' \
         > "${file_list}"
 mkdir -p "${INSTALL_ROOT}"
