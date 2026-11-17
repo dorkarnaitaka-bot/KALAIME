@@ -17,7 +17,7 @@ jobs:
       VCPKG_MAX_CONCURRENCY: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
 
       - name: Install build and analysis tools
         run: |
@@ -51,7 +51,7 @@ jobs:
 
       - name: Upload CTest report
         if: always()
-        uses: actions/upload-artifact@v4 # v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ubuntu-clang-ctest
           path: build/ubuntu-ci/Testing/Temporary/
@@ -66,7 +66,7 @@ jobs:
       VCPKG_MAX_CONCURRENCY: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
 
       - name: Install build tools
         run: |
