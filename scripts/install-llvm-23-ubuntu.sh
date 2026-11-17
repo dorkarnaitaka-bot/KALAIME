@@ -18,6 +18,7 @@ command -v zstd >/dev/null 2>&1 || {
 }
 
 llvm_installation_is_valid() {
+    [[ -d "${LLVM_ROOT}" ]] || return 1
     for tool in "${LLVM_TOOLS[@]}"; do
         if [[ ! -x "${LLVM_BIN}/${tool}" ]]; then
             printf 'ERROR: LLVM tool %s is missing or not executable.\n' "${tool}" >&2
@@ -110,7 +111,7 @@ archive_root="$(zstd --long=30 -dc "${archive}" | tar -tf - | sed -n '1{s#/.*##;
     exit 1
 }
 zstd --long=30 -dc "${archive}" | tar -tf - |
-    grep -E "^${archive_root}/(bin/(clang|clang\\+\\+|clangd|clang-tidy|clang-format|ld\\.lld|llvm-(ar|ranlib|nm|objcopy|objdump|strip|readelf|readobj|symbolizer))(-[0-9]+(\\.[0-9]+)*)?|lib/lib(clang|LLVM)[^/]*\\.so[^/]*|lib/clang/23/)" \
+    grep -E "^${archive_root}/(bin/(clang|clang\\+\\+|clangd|clang-tidy|clang-format|lld|ld\\.lld|llvm-(ar|ranlib|nm|objcopy|objdump|strip|readelf|readobj|symbolizer))(-[0-9]+(\\.[0-9]+)*)?|lib/lib(clang|LLVM)[^/]*\\.so[^/]*|lib/clang/23/)" \
     | grep -v '/$' \
         > "${file_list}"
 mkdir -p "${INSTALL_ROOT}"
