@@ -105,6 +105,7 @@ jobs:
       - name: Install pinned vcpkg
         shell: bash
         run: |
+          mkdir -p "$VCPKG_DOWNLOADS"
           baseline=0df93a05b9de080129e653ec4776d7e14a1b2e4f
           cached_commit="$(git -C "$VCPKG_ROOT" rev-parse HEAD 2>/dev/null || true)"
           if [[ "$cached_commit" == "$baseline" &&
