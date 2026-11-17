@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace kalaime::unicode {
@@ -13,6 +15,9 @@ struct BengaliCharacterInfo {
     std::string normalized_form;
 };
 
+bool is_valid_utf8(std::string_view text) noexcept;
+std::size_t count_utf8_code_points(std::string_view text);
+std::string normalize_nfc(std::string_view text);
 std::string normalize_nfkc(const std::string& text);
 std::vector<BengaliCharacterInfo> supported_bengali_inventory();
 bool is_bengali_codepoint(unsigned int code_point);

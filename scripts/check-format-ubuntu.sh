@@ -3,7 +3,7 @@ set -euo pipefail
 
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly PROJECT_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
-formatter="${CLANG_FORMAT:-clang-format-18}"
+formatter="${CLANG_FORMAT:-clang-format-23}"
 
 command -v "${formatter}" >/dev/null 2>&1 || {
     printf 'ERROR: %s is required. Run scripts/bootstrap-ubuntu.sh.\n' "${formatter}" >&2

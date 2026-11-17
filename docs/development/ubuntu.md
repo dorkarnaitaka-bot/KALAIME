@@ -1,11 +1,13 @@
 # Ubuntu 24.04 Development Setup
 
-The supported development host for this infrastructure is Ubuntu 24.04 LTS
-x86_64. The bootstrap script checks the OS and architecture, installs missing
-packages from Ubuntu's configured repositories, installs Syft and Grype using
-Anchore's official installers, and creates a vcpkg checkout at the pinned
-baseline. It does not install redundant apt copies of project libraries: ICU,
-SQLite, GoogleTest, and Google Benchmark are resolved with vcpkg.
+The supported development host is Ubuntu 24.04 LTS x86_64. The bootstrap
+script checks the OS and architecture, installs LLVM/Clang 23 from the official
+stable release artifact, builds GCC 16.2.0 from its checksum-verified official
+source release, installs CMake 4.5.0 and Ninja 1.13.2 from verified upstream
+release artifacts, installs Syft and Grype using Anchore's official installers,
+and creates a vcpkg checkout at the pinned baseline. It does not install
+redundant apt copies of project libraries: ICU, SQLite, GoogleTest, and Google
+Benchmark are resolved with vcpkg.
 
 ## One-time setup
 
@@ -70,7 +72,13 @@ KALAIME_JOBS=2 scripts/build-ubuntu.sh ubuntu-dev
 ```
 
 Ninja creates `build/ubuntu-dev/compile_commands.json`, consumed by clangd and
-clang-tidy. Normal development disables benchmark compilation.
+clang-tidy. The development preset explicitly uses `clang++-23`; the GCC CI
+preset explicitly uses `g++-16` (GCC 16.2.0). GCC CI checks the configured
+compiler and every entry in `build/ubuntu-gcc-ci/compile_commands.json` after
+configuration, without compiling sources. These checks verify compiler
+selection, not successful compilation or runtime behavior; those require the
+subsequent build and test steps. Normal development disables benchmark
+compilation.
 
 ## Optional benchmark target
 
@@ -80,7 +88,7 @@ Ubuntu development preset. Enable it in an isolated build directory:
 ```bash
 cmake -S . -B build/ubuntu-benchmarks -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
-  -DCMAKE_CXX_COMPILER=clang++-18 \
+  -DCMAKE_CXX_COMPILER=clang++-23 \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DVCPKG_MANIFEST_FEATURES='testing;benchmarks' \
@@ -95,14 +103,15 @@ scripts/check-format-ubuntu.sh
 scripts/check-tidy-ubuntu.sh
 ```
 
-The formatting check uses `clang-format-18` and `.clang-format`. To format an
+The formatting check uses `clang-format-23` and `.clang-format`. To format an
 individual file locally, run:
 
 ```bash
-clang-format-18 -i path/to/file.cpp
+clang-format-23 -i path/to/file.cpp
 ```
 
-`clang-tidy-18` reads the configured compile database. CMake/clangd/clang-tidy
+`clang-tidy-23` reads the configured compile database. `g++-16` is built from
+the official GCC 16.2.0 source release during bootstrap. CMake/clangd/clang-tidy
 diagnostics in this environment apply to portable sources only; Ubuntu does
 not supply Windows SDK, MSVC COM declarations, or TSF headers. Windows-only
 sources are checked by Windows CI with MSVC and `/analyze`.
@@ -110,7 +119,7 @@ sources are checked by Windows CI with MSVC and `/analyze`.
 To run clangd from a terminal:
 
 ```bash
-clangd-18 --background-index --clang-tidy \
+clangd-23 --background-index --clang-tidy \
   --compile-commands-dir="$PWD/build/ubuntu-dev"
 ```
 

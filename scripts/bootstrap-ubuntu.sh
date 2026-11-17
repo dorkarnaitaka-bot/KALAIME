@@ -22,10 +22,9 @@ command -v apt-get >/dev/null 2>&1 || fail "apt-get was not found."
 
 declare -A package_commands=(
     [build-essential]="g++"
-    [clang-18]="clang++-18"
-    [clang-tidy-18]="clang-tidy-18"
-    [clangd-18]="clangd-18"
-    [clang-format-18]="clang-format-18"
+    [libgmp-dev]="pkg-config"
+    [libmpfr-dev]="pkg-config"
+    [libmpc-dev]="pkg-config"
     [cmake]="cmake"
     [ninja-build]="ninja"
     [git]="git"
@@ -33,6 +32,7 @@ declare -A package_commands=(
     [zip]="zip"
     [unzip]="unzip"
     [tar]="tar"
+    [zstd]="zstd"
     [pkg-config]="pkg-config"
     [python3]="python3"
 )
@@ -51,6 +51,11 @@ if ((${#missing_packages[@]})); then
 else
     printf 'All required Ubuntu packages are already installed.\n'
 fi
+
+scripts/install-llvm-23-ubuntu.sh
+scripts/install-linux-build-tools.sh
+scripts/install-gcc-16-ubuntu.sh
+export PATH="${HOME}/.local/bin:${PATH}"
 
 for package in "${!package_commands[@]}"; do
     tool="${package_commands[$package]}"
@@ -90,7 +95,7 @@ fi
 [[ -x "${VCPKG_ROOT}/vcpkg" ]] || fail "vcpkg executable was not created at ${VCPKG_ROOT}/vcpkg."
 printf '\nBootstrap complete.\n'
 printf 'Ubuntu: %s (%s)\n' "${VERSION_ID}" "$(uname -m)"
-for tool in git cmake ninja g++ clang++-18 clangd-18 clang-format-18 clang-tidy-18 python3 syft grype; do
+for tool in git cmake ninja g++-16 clang++-23 clangd-23 clang-format-23 clang-tidy-23 python3 syft grype; do
     printf '%-18s %s\n' "${tool}" "$("${tool}" --version 2>&1 | head -n 1)"
 done
 printf 'vcpkg baseline: %s\n' "$(git -C "${VCPKG_ROOT}" rev-parse HEAD)"
